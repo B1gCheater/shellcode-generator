@@ -1,20 +1,34 @@
 # shellcode-generator
 
-将原生 Windows EXE / DLL 转换为位置无关的二进制载荷（shellcode）。
+Convert a native Windows EXE / DLL into position independent binary shellcode.
 
-基于 [shellcode-lib-go](https://github.com/B1gCheater/shellcode-lib-go) 库的完整功能：
-架构选择、LZNT1/XPRESS 压缩、AMSI/WLDP/ETW bypass 策略、实例随机化与加密、
-PE 头处理、线程入口、退出语义、宽字符参数。
+Built on the full feature set of [shellcode-lib-go](https://github.com/B1gCheater/shellcode-lib-go):
+architecture selection, LZNT1/XPRESS compression, AMSI/WLDP/ETW bypass policy,
+instance randomisation and encryption, PE header handling, thread entry, exit
+semantics and wide-character parameters.
 
-## 构建
+The generator runs on Windows and Linux; the payload it produces always targets
+Windows only.
+
+## Build
+
+Release scripts build both platform binaries into `./release` and print their
+SHA-256 sums (static builds, `CGO_ENABLED=0`):
 
 ```powershell
-go build -o shellcode-generator.exe .
+.\build-release.ps1   # Windows
+./build-release.sh    # Linux / macOS / WSL
+```
+
+Manual build and checks:
+
+```powershell
+go build -trimpath -ldflags "-s -w" -o shellcode-generator.exe .
 go test ./...
 go vet ./...
 ```
 
-## 用法
+## Usage
 
 ```text
 shellcode-generator.exe -i payload.exe
@@ -24,55 +38,62 @@ shellcode-generator.exe -i payload.exe --compress lznt1 --entropy full
 shellcode-generator.exe -i payload.exe --check
 ```
 
-完整选项见 `--help`。要点：
+Run `--help` for the full list. Highlights:
 
-| 选项 | 默认 | 说明 |
+| Option | Default | Meaning |
 |---|---|---|
-| `-i, --input` | 必填 | 原生 PE 文件，按内容识别，不靠扩展名 |
-| `-o, --output` | `./<输入名>.bin` | 已存在时需 `--force` 才覆盖 |
-| `-a, --arch` | `auto` | `auto \| x86 \| x64 \| dual`，按 PE 内容自动选择 |
-| `-z, --compress` | `none` | `none \| lznt1 \| xpress`；lznt1 任意平台可生成 |
-| `-b, --bypass` | `continue` | `none \| abort \| continue`，AMSI/WLDP/ETW 策略 |
-| `-e, --entropy` | `none` | `none \| random \| full`；none 产物可复现可哈希比对，full 加实例加密 |
-| `-k, --headers` | `overwrite` | `overwrite \| keep`，映射后 PE 头 |
-| `-m, --method` | 无 | DLL 导出名，区分大小写，构建时校验存在性 |
-| `-p, --params` | 无 | EXE 命令行 / DLL 导出参数；超长直接报错，不静默截断 |
-| `-w, --wide` | 关 | 参数以 UTF-16 交付给 DLL 导出 |
-| `--entry` | `thread` | EXE 入口：`thread \| direct` |
-| `--exit` | `thread` | 模块返回后：`thread \| process` |
-| `-c, --check` | — | 仅静态检查（Inspect + Compat 报告），不生成 |
+| `-i, --input` | required | native PE file, identified by content, not by extension |
+| `-o, --output` | `./<input name>.bin` | existing files need `--force` to overwrite |
+| `-a, --arch` | `auto` | `auto \| x86 \| x64 \| dual`, picked from the PE content |
+| `-z, --compress` | `none` | `none \| lznt1 \| xpress`; lznt1 generates on any host, xpress on Windows only |
+| `-b, --bypass` | `continue` | `none \| abort \| continue`; AMSI/WLDP/ETW policy |
+| `-e, --entropy` | `none` | `none \| random \| full`; none is reproducible and hash-comparable, full adds instance encryption |
+| `-k, --headers` | `overwrite` | `overwrite \| keep`; mapped PE headers |
+| `-m, --method` | none | DLL export to call, case sensitive, verified at build time |
+| `-p, --params` | none | EXE command line / DLL export argument; over-long values are rejected, never silently truncated |
+| `-w, --wide` | off | deliver params to the DLL export as UTF-16 |
+| `--entry` | `thread` | EXE entry: `thread \| direct` |
+| `--exit` | `thread` | after the module returns: `thread \| process` |
+| `-c, --check` | — | static inspection only (Inspect + Compat report), no output file |
 
-### 设计原则
+## Design principles
 
-- **确定性优先**：默认 `entropy=none`，同输入同产物，SHA-256 可比对；要加密显式 `--entropy full`。
-- **不静默降级**：参数超长、架构冲突、导出不存在、阻断性兼容问题，全部报错而非猜测。
-- **原子写入**：输出经同目录临时文件落盘，失败不残留半成品，不破坏旧产物。
-- **机器可读**：`--json` 输出 schema_version 1 的完整对象（含 bypass/entropy/headers/wide/entry/exit 与 SHA-256）；警告与错误走 stderr。
-- **生成器只写文件**：不加载、不执行、不注入产物；验证由调用方完成。
+- **Reproducibility first**: the default `entropy=none` produces identical bytes
+  for identical input, so SHA-256 comparisons work; opt into encryption with
+  `--entropy full`.
+- **No silent degradation**: over-long parameters, arch conflicts, missing
+  exports and blocking compatibility issues are errors, never guesses.
+- **Atomic writes**: output lands through a same-directory temporary file; a
+  failure leaves no half-written payload and never damages a previous one.
+- **Machine readable**: `--json` emits a schema_version 1 object including all
+  runtime options and the output SHA-256; warnings and errors go to stderr.
+- **The generator only writes files**: it never loads, executes or injects its
+  output; verification belongs to the caller.
 
-### 退出码
+## Exit codes
 
-| 码 | 含义 |
+| Code | Meaning |
 |---|---|
-| 0 | 成功（生成 / 检查通过 / 帮助 / 版本） |
-| 1 | 参数错误或组合冲突 |
-| 2 | 输入读取失败、非有效 PE 或类型不支持 |
-| 3 | 兼容性阻断，或警告按策略视为失败 |
-| 4 | 库构建失败（导出不存在、压缩失败等） |
-| 5 | 输出冲突或写入失败 |
+| 0 | success (generation / clean check / help / version) |
+| 1 | invalid arguments or conflicting options |
+| 2 | input read failure, not a valid PE, or unsupported type |
+| 3 | compatibility blocker, or warnings treated as failures |
+| 4 | library build failure (missing export, compression failure, ...) |
+| 5 | output conflict or write failure |
 
-## 依赖
+## Dependencies
 
-`github.com/B1gCheater/shellcode-lib-go/donut`，锁定提交 `a921e08`。
-库的许可证与归属见 `THIRD_PARTY_NOTICES.md`。
+`github.com/B1gCheater/shellcode-lib-go/donut`, pinned to commit `a921e08`.
+License and attribution notes live in `THIRD_PARTY_NOTICES.md`.
 
-## 测试
+## Testing
 
-`test/loader.py` 是一个最小 shellcode 加载器（VirtualAlloc + 执行），
-用于人工验证生成产物：
+`test/loader.py` is a minimal shellcode loader (VirtualAlloc + execute) for
+manually verifying generated payloads:
 
 ```powershell
 python test\loader.py payload.bin
 ```
 
-`go test ./...` 覆盖参数解析、生成路径、覆盖保护、确定性、JSON 契约与错误码。
+`go test ./...` covers argument parsing, the generation path, overwrite
+protection, determinism, the JSON contract and exit codes.
