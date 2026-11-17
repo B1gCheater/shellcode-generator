@@ -59,7 +59,7 @@ func canonical(name string) string {
 // Errors never include supplied module parameter text.
 func Parse(args []string) (Options, error) {
 	opts := Options{
-		Arch: "auto", Compress: "none", Entry: "thread", Exit: "thread",
+		Arch: "auto", Compress: "none", Entry: "direct", Exit: "thread",
 		Bypass: "continue", Entropy: "none", Headers: "overwrite",
 		Set: make(map[string]bool),
 	}
@@ -259,7 +259,7 @@ Module parameters:
   -m, --method <export>        DLL export to call, case sensitive
   -p, --params <text>          EXE command line, or the DLL export's single
                                string argument
-      --entry <mode>           EXE entry: thread | direct (default: thread)
+      --entry <mode>           EXE entry: thread | direct (default: direct)
       --exit <mode>            after the module returns: thread | process
                                (default: thread; process terminates the host)
   -w, --wide                   pass params to the DLL export as UTF-16

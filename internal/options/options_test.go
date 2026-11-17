@@ -11,7 +11,7 @@ func TestDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.Input != "demo.exe" || got.Output != "" || got.Arch != "auto" || got.Compress != "none" || got.Entry != "thread" || got.Exit != "thread" {
+	if got.Input != "demo.exe" || got.Output != "" || got.Arch != "auto" || got.Compress != "none" || got.Entry != "direct" || got.Exit != "thread" {
 		t.Fatalf("unexpected defaults: %+v", got)
 	}
 	if got.Bypass != "continue" || got.Entropy != "none" || got.Headers != "overwrite" || got.Wide {

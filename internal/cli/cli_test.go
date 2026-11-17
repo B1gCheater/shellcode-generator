@@ -84,7 +84,7 @@ func TestGeneration(t *testing.T) {
 	}
 	if r.Bypass == nil || *r.Bypass != "continue" || r.Entropy == nil || *r.Entropy != "none" ||
 		r.Headers == nil || *r.Headers != "overwrite" || r.Wide == nil || *r.Wide ||
-		r.Entry == nil || *r.Entry != "thread" || r.Exit == nil || *r.Exit != "thread" {
+		r.Entry == nil || *r.Entry != "direct" || r.Exit == nil || *r.Exit != "thread" {
 		t.Fatalf("unexpected runtime fields: %+v", r)
 	}
 	written, err := os.ReadFile(output)
