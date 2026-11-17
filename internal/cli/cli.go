@@ -23,7 +23,7 @@ import (
 const (
 	Version       = "0.1.0"
 	dependency    = "github.com/B1gCheater/shellcode-lib-go"
-	pinnedVersion = "v0.0.0-20261114201049-a921e080cff3"
+	pinnedVersion = "v0.0.0-20261117114858-f33b66201ee6"
 )
 
 // Report is the versioned machine interface. Nonapplicable fields are null;
@@ -240,6 +240,12 @@ func buildError(err error) *pecheck.Error {
 	case errors.Is(err, donut.ErrDLLParam):
 		return &pecheck.Error{Code: "params_without_method", Exit: 4,
 			Message: "parameters were given for a DLL without --method; there is no export to receive them"}
+	case errors.Is(err, donut.ErrMethodNameTooLong):
+		return &pecheck.Error{Code: "method_too_long", Exit: 4,
+			Message: "the named DLL export is longer than the library can encode; refused instead of truncated"}
+	case errors.Is(err, donut.ErrForwardedExport):
+		return &pecheck.Error{Code: "forwarded_export", Exit: 4,
+			Message: "the named DLL export is a forwarder to another DLL, not code the loader can call by address"}
 	case errors.Is(err, donut.ErrArchMismatch):
 		return &pecheck.Error{Code: "arch_mismatch", Exit: 3,
 			Message: "the target architecture cannot host the input's bitness"}
