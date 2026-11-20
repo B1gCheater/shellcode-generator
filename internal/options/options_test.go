@@ -76,7 +76,7 @@ func TestInvalidArguments(t *testing.T) {
 		{"subcommand", []string{"generate", "-i=x"}, "subcommands"},
 		{"terminator", []string{"--", "--json"}, "positional"},
 		{"arch", []string{"-i=x", "--arch=amd64"}, "auto | x86 | x64 | dual"},
-		{"compress", []string{"-i=x", "--compress=zip"}, "none | lznt1 | xpress"},
+		{"compress", []string{"-i=x", "--compress=zip"}, "none | aplib | lznt1 | xpress"},
 		{"entry", []string{"-i=x", "--entry=process"}, "thread | direct"},
 		{"exit", []string{"-i=x", "--exit=direct"}, "thread | process"},
 		{"bypass", []string{"-i=x", "--bypass=patch"}, "none | abort | continue"},

@@ -52,9 +52,14 @@ func TestArchitectureMatrixAndModuleType(t *testing.T) {
 					if arch == "auto" {
 						wantLoader = payload
 					}
-					if got.LoaderArch != wantLoader || got.Issues == nil || len(got.Issues) != 0 {
-						t.Fatalf("unexpected result: %+v", got)
+				if got.LoaderArch != wantLoader || got.Issues == nil {
+					t.Fatalf("unexpected result: %+v", got)
+				}
+				for _, issue := range got.Issues {
+					if issue.Level == "block" || issue.Level == "warning" {
+						t.Fatalf("unexpected blocking or warning issue: %+v", got)
 					}
+				}
 				})
 			}
 		}

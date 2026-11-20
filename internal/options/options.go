@@ -137,7 +137,7 @@ func validate(opts Options) error {
 		allowed     []string
 	}{
 		{"arch", opts.Arch, []string{"auto", "x86", "x64", "dual"}},
-		{"compress", opts.Compress, []string{"none", "lznt1", "xpress"}},
+		{"compress", opts.Compress, []string{"none", "aplib", "lznt1", "xpress"}},
 		{"entry", opts.Entry, []string{"thread", "direct"}},
 		{"exit", opts.Exit, []string{"thread", "process"}},
 		{"bypass", opts.Bypass, []string{"none", "abort", "continue"}},
@@ -252,7 +252,7 @@ Input and output:
   -o, --output <file>          output path; default: <input name>.bin in the
                                current directory
   -a, --arch <arch>            auto | x86 | x64 | dual (default: auto)
-  -z, --compress <mode>        none | lznt1 | xpress (default: none)
+  -z, --compress <mode>        none | aplib | lznt1 | xpress (default: none)
       --force                  overwrite an existing output file
 
 Module parameters:

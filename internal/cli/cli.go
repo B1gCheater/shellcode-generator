@@ -23,7 +23,7 @@ import (
 const (
 	Version       = "0.1.0"
 	dependency    = "github.com/B1gCheater/shellcode-lib-go"
-	pinnedVersion = "v0.0.0-20261117114858-f33b66201ee6"
+	pinnedVersion = "v0.0.0-20261120125014-0d177fbfd06d"
 )
 
 // Report is the versioned machine interface. Nonapplicable fields are null;
@@ -187,6 +187,8 @@ func donutConfig(opts options.Options, result pecheck.Result) donut.Config {
 		}
 	}
 	switch opts.Compress {
+	case "aplib":
+		cfg.Compress = donut.CompressAPLib
 	case "lznt1":
 		cfg.Compress = donut.CompressLZNT1
 	case "xpress":
@@ -243,9 +245,6 @@ func buildError(err error) *pecheck.Error {
 	case errors.Is(err, donut.ErrMethodNameTooLong):
 		return &pecheck.Error{Code: "method_too_long", Exit: 4,
 			Message: "the named DLL export is longer than the library can encode; refused instead of truncated"}
-	case errors.Is(err, donut.ErrForwardedExport):
-		return &pecheck.Error{Code: "forwarded_export", Exit: 4,
-			Message: "the named DLL export is a forwarder to another DLL, not code the loader can call by address"}
 	case errors.Is(err, donut.ErrArchMismatch):
 		return &pecheck.Error{Code: "arch_mismatch", Exit: 3,
 			Message: "the target architecture cannot host the input's bitness"}

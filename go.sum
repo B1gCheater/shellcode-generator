@@ -1,2 +1,4 @@
 github.com/B1gCheater/shellcode-lib-go v0.0.0-20261117114858-f33b66201ee6 h1:byfgeqywNeiQEQcOqB4MfEjkHn/OLQeZTHTUdOPndBQ=
 github.com/B1gCheater/shellcode-lib-go v0.0.0-20261117114858-f33b66201ee6/go.mod h1:vBFkzksmLaujsLzt0WcEr3Oc5n6VSimTySr6MxDwkMk=
+github.com/B1gCheater/shellcode-lib-go v0.0.0-20261120125014-0d177fbfd06d h1:S6cR/iEJivi3yDIyOkWgpEN3uCMzCO2k9HZn1oINOpY=
+github.com/B1gCheater/shellcode-lib-go v0.0.0-20261120125014-0d177fbfd06d/go.mod h1:vBFkzksmLaujsLzt0WcEr3Oc5n6VSimTySr6MxDwkMk=
